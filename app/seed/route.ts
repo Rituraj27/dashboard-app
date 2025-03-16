@@ -103,15 +103,25 @@ async function seedRevenue() {
 
 export async function GET() {
   try {
-    const result = await sql.begin((sql) => [
-      seedUsers(),
-      seedCustomers(),
-      seedInvoices(),
-      seedRevenue(),
-    ]);
+    await sql.begin(async (sql) => {
+      await seedUsers();
+      await seedCustomers();
+      await seedInvoices();
+      await seedRevenue();
+    });
 
-    return Response.json({ message: 'Database seeded successfully' });
+    return new Response(
+      JSON.stringify({ message: 'Database seeded successfully' }),
+      {
+        status: 200,
+        headers: { 'Content-Type': 'application/json' },
+      }
+    );
   } catch (error) {
-    return Response.json({ error }, { status: 500 });
+    const errorMessage = (error as Error).message || 'Unknown error';
+    return new Response(JSON.stringify({ error: errorMessage }), {
+      status: 500,
+      headers: { 'Content-Type': 'application/json' },
+    });
   }
 }
